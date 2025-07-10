@@ -5,6 +5,7 @@ export interface User {
   role: 'buyer' | 'seller' | 'admin';
   city?: string;
   isVerified?: boolean;
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
   businessName?: string;
   description?: string;
 }

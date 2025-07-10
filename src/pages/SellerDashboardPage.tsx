@@ -228,17 +228,34 @@ export const SellerDashboardPage: React.FC = () => {
     );
   }
   
-  if (!user.isVerified) {
+  if (!user.isVerified || user.approvalStatus !== 'approved') {
     return (
       <div className="min-h-screen bg-gradient-elegant flex items-center justify-center">
         <div className="text-center max-w-2xl mx-auto px-4">
-          <div className="bg-yellow-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Clock className="w-12 h-12 text-yellow-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-primary-900 mb-4">Account Pending Verification</h1>
-          <p className="text-lg text-primary-700 mb-6 leading-relaxed">
-            Thank you for registering as a seller! Your account is currently under review by our admin team.
-          </p>
+          {user.approvalStatus === 'pending' && (
+            <>
+              <div className="bg-yellow-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Clock className="w-12 h-12 text-yellow-600" />
+              </div>
+              <h1 className="text-3xl font-bold text-primary-900 mb-4">Account Pending Approval</h1>
+              <p className="text-lg text-primary-700 mb-6 leading-relaxed">
+                Thank you for registering as a seller! Your account is currently under review by our admin team.
+              </p>
+            </>
+          )}
+          
+          {user.approvalStatus === 'rejected' && (
+            <>
+              <div className="bg-red-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-12 h-12 text-red-600" />
+              </div>
+              <h1 className="text-3xl font-bold text-primary-900 mb-4">Application Not Approved</h1>
+              <p className="text-lg text-primary-700 mb-6 leading-relaxed">
+                Unfortunately, your seller application was not approved at this time. Please contact our support team for more information.
+              </p>
+            </>
+          )}
+          
           <div className="bg-primary-50 rounded-xl p-6 mb-6 border border-primary-200">
             <h3 className="font-semibold text-primary-900 mb-3">What happens next?</h3>
             <div className="space-y-2 text-left">
@@ -257,7 +274,10 @@ export const SellerDashboardPage: React.FC = () => {
             </div>
           </div>
           <p className="text-primary-600">
-            This process typically takes 1-2 business days. We appreciate your patience!
+            {user.approvalStatus === 'pending' 
+              ? 'This process typically takes 1-2 business days. We appreciate your patience!'
+              : 'If you believe this is an error, please contact our support team.'
+            }
           </p>
         </div>
       </div>

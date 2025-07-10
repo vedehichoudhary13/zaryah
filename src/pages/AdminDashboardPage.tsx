@@ -149,53 +149,67 @@ export const AdminDashboardPage: React.FC = () => {
       .from('profiles')
       .select('*')
       .eq('role', 'seller')
-      .eq('is_verified', false);
+      .eq('approval_status', 'pending');
     if (!error) setPendingSellers(data || []);
   };
 
   const handleApproveSeller = async (seller: any) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ is_verified: true })
-      .eq('id', seller.id);
+    try {
+      // Call the approve_seller function
+      const { error } = await supabase.rpc('approve_seller', {
+        seller_id: seller.id,
+        admin_id: user.id
+      });
       
-    if (!error) {
-      toast.success(`${seller.name} approved as seller!`);
-      
-      // Get user's email from auth.users table
-      const { data: authUser } = await supabase.auth.admin.getUserById(seller.id);
-      
-      if (authUser.user?.email) {
-        // Send approval email
-        await emailService.sendSellerApproval({
-          email: authUser.user.email,
-          name: seller.name || '',
-          id: seller.id
-        });
-        console.log('Approval email sent to:', authUser.user.email);
+      if (!error) {
+        toast.success(`${seller.name} approved as seller!`);
+        
+        // Get user's email from auth.users table
+        const { data: authUser } = await supabase.auth.admin.getUserById(seller.id);
+        
+        if (authUser.user?.email) {
+          // Send approval email
+          await emailService.sendSellerApproval({
+            email: authUser.user.email,
+            name: seller.name || '',
+            id: seller.id
+          });
+          console.log('Approval email sent to:', authUser.user.email);
+        } else {
+          console.warn('Could not find email for seller:', seller.id);
+        }
+        
+        fetchPendingSellers();
       } else {
-        console.warn('Could not find email for seller:', seller.id);
+        console.error('Error approving seller:', error);
+        toast.error('Failed to approve seller');
       }
-      
-      fetchPendingSellers();
-    } else {
+    } catch (error) {
+      console.error('Error in handleApproveSeller:', error);
       toast.error('Failed to approve seller');
     }
   };
 
   const handleRejectSeller = async (seller: any) => {
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', seller.id);
+    const reason = prompt('Please provide a reason for rejection (optional):') || 'Application did not meet our requirements';
+    
+    try {
+      // Call the reject_seller function
+      const { error } = await supabase.rpc('reject_seller', {
+        seller_id: seller.id,
+        admin_id: user.id,
+        reason: reason
+      });
       
-    if (!error) {
-      // Also delete the auth user
-      await supabase.auth.admin.deleteUser(seller.id);
-      
-      toast.success(`${seller.name} rejected and removed from system`);
-      fetchPendingSellers();
-    } else {
+      if (!error) {
+        toast.success(`${seller.name} application rejected`);
+        fetchPendingSellers();
+      } else {
+        console.error('Error rejecting seller:', error);
+        toast.error('Failed to reject seller');
+      }
+    } catch (error) {
+      console.error('Error in handleRejectSeller:', error);
       toast.error('Failed to reject seller');
     }
   };

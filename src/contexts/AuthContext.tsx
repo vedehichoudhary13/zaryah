@@ -107,6 +107,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error && error.code !== 'PGRST116') {
         console.error('Database error fetching profile:', error);
+        // For sellers, don't create fallback - they need proper approval
+        if (supabaseUser.user_metadata?.role === 'seller') {
+          console.error('Seller profile not found - this should not happen');
+          setUser(null);
+          return;
+        }
         createFallbackUser(supabaseUser, supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User');
         return;
       }
@@ -120,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const defaultName = supabaseUser.user_metadata?.name || 
                              supabaseUser.email?.split('@')[0] || 
                              'User';
+          const userRole = supabaseUser.user_metadata?.role || 'buyer';
           console.log('Creating new profile for user:', supabaseUser.id);
           
           try {
@@ -128,15 +135,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               .insert({
                 id: supabaseUser.id,
                 name: defaultName,
-                role: 'buyer',
+                role: userRole,
                 city: 'Mumbai',
-                is_verified: false
+                is_verified: userRole === 'buyer' || userRole === 'admin',
+                approval_status: userRole === 'seller' ? 'pending' : 'approved',
+                business_name: supabaseUser.user_metadata?.business_name,
+                description: supabaseUser.user_metadata?.description,
+                mobile: supabaseUser.user_metadata?.mobile,
+                verification_doc: supabaseUser.user_metadata?.verification_doc
               })
               .select()
               .single();
           
             if (insertError) {
               console.error('Error creating profile:', insertError);
+              // For sellers, don't create fallback
+              if (userRole === 'seller') {
+                setUser(null);
+                toast.error('Failed to create seller profile. Please contact support.');
+                return;
+              }
               createFallbackUser(supabaseUser, defaultName);
             } else if (newProfile) {
               console.log('Profile created successfully:', newProfile);
@@ -147,6 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 role: newProfile.role,
                 city: newProfile.city || 'Mumbai',
                 isVerified: newProfile.is_verified,
+                approvalStatus: newProfile.approval_status,
                 businessName: newProfile.business_name || undefined,
                 description: newProfile.description || undefined
               });
@@ -154,7 +173,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch (insertError) {
             console.error('Error creating profile:', insertError);
             console.warn('Failed to create profile in database, using fallback');
-            // Create fallback user
+            // For sellers, don't create fallback
+            if (userRole === 'seller') {
+              setUser(null);
+              toast.error('Failed to create seller profile. Please contact support.');
+              return;
+            }
             createFallbackUser(supabaseUser, defaultName);
           }
         } else {
@@ -173,6 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: profile.role,
           city: profile.city || 'Mumbai',
           isVerified: profile.is_verified,
+          approvalStatus: profile.approval_status,
           businessName: profile.business_name || undefined,
           description: profile.description || undefined
         });
@@ -301,7 +326,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             city,
             business_name: businessName,
             description,
-            is_verified: role === 'buyer' || role === 'admin', // Buyers and admins are auto-verified
+            is_verified: role === 'buyer' || role === 'admin',
+            approval_status: role === 'seller' ? 'pending' : 'approved',
             mobile: role === 'seller' ? mobile : undefined,
             verification_doc: role === 'seller' ? verificationDoc : undefined
           });
@@ -309,7 +335,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Profile creation error:', profileError);
           console.warn('Profile creation failed, but user account was created successfully');
           if (role === 'seller') {
-            toast.success('Seller account created! Please wait for admin approval before you can start listing products.');
+            toast.success('Seller account created! Please check your email for further instructions. Admin approval is required before you can access your dashboard.');
           } else {
             toast.success('Account created successfully! Profile will be set up automatically on first login.');
           }
@@ -318,7 +344,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Profile created successfully');
         
         if (role === 'seller') {
-          toast.success('Seller account created successfully! Please wait for admin approval to start listing products.');
+          toast.success('Seller account created successfully! Please check your email for further instructions. You will receive a notification once your account is approved.');
         } else {
           toast.success('Account created successfully! Welcome to Zaryah!');
         }
