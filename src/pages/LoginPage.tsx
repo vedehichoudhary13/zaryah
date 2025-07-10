@@ -22,7 +22,28 @@ export const LoginPage: React.FC = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        navigate('/');
+        // Check user role and redirect appropriately
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role, approval_status')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile?.role === 'seller' && profile?.approval_status !== 'approved') {
+            // Redirect sellers to a waiting page if not approved
+            navigate('/seller/dashboard');
+          } else if (profile?.role === 'admin') {
+            navigate('/admin/dashboard');
+          } else if (profile?.role === 'seller') {
+            navigate('/seller/dashboard');
+          } else {
+            navigate('/');
+          }
+        } else {
+          navigate('/');
+        }
       } else {
         setError('Invalid email or password. Please check your credentials and try again.');
       }

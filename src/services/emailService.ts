@@ -246,45 +246,54 @@ class EmailService {
   async sendSellerApproval(seller: { email: string, name: string, id: string }) {
     const subject = 'Your Seller Account Has Been Approved!';
     const dashboardUrl = `${window.location.origin}/seller/dashboard`;
-    const quote = '“Success is not the key to happiness. Happiness is the key to success. If you love what you are doing, you will be successful.”';
+    const quote = '"Your journey as a creator begins now. Every masterpiece starts with a single step."';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 30px; text-align: center;">
+        <div style="background: linear-gradient(135deg, #b8926b, #a67c5a); padding: 30px; text-align: center;">
           <h1 style="color: white; margin: 0;">Congratulations, ${seller.name}!</h1>
-          <p style="color: #d1fae5; margin: 10px 0 0 0;">Your seller account has been approved on Zaryah!</p>
+          <p style="color: #f4f0e8; margin: 10px 0 0 0;">Your seller journey with Zaryah is set to go! 🎉</p>
         </div>
         <div style="padding: 30px; background: white;">
-          <blockquote style="font-style: italic; color: #059669; border-left: 4px solid #10b981; padding-left: 16px; margin: 0 0 24px 0;">${quote}</blockquote>
-          <p>We're thrilled to welcome you to the Zaryah family! You can now start listing your beautiful handmade products and connect with customers who appreciate authentic craftsmanship.</p>
+          <blockquote style="font-style: italic; color: #a67c5a; border-left: 4px solid #b8926b; padding-left: 16px; margin: 0 0 24px 0;">${quote}</blockquote>
+          <p>🌟 <strong>Welcome to the Zaryah family!</strong> Your seller account has been approved and you're now ready to share your beautiful handmade creations with customers who truly appreciate authentic craftsmanship.</p>
           
-          <div style="background: #f0fdf4; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #10b981;">
-            <h3 style="color: #065f46; margin: 0 0 10px 0;">What you can do now:</h3>
-            <ul style="margin: 0; padding-left: 20px; color: #065f46;">
-              <li>Access your seller dashboard</li>
-              <li>Upload product photos and descriptions</li>
-              <li>Set your pricing and inventory</li>
-              <li>Start receiving orders from customers</li>
-              <li>Track your sales and earnings</li>
+          <div style="background: #faf8f5; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #b8926b;">
+            <h3 style="color: #5c4435; margin: 0 0 10px 0;">🚀 Your seller journey starts now:</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #5c4435;">
+              <li>✨ Access your personalized seller dashboard</li>
+              <li>📸 Upload stunning photos of your creations</li>
+              <li>💰 Set competitive pricing for your masterpieces</li>
+              <li>🛒 Start receiving orders from eager customers</li>
+              <li>📊 Track your sales and growing success</li>
+              <li>🎯 Build your brand and customer following</li>
             </ul>
           </div>
           
           <div style="margin: 32px 0; text-align: center;">
-            <a href="${dashboardUrl}" style="background: #10b981; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 18px; font-weight: bold;">Go to Your Seller Dashboard</a>
+            <a href="${dashboardUrl}" style="background: #b8926b; color: white; padding: 16px 40px; border-radius: 12px; text-decoration: none; font-size: 18px; font-weight: bold; box-shadow: 0 4px 12px rgba(184, 146, 107, 0.3);">🎨 Access Your Dashboard</a>
           </div>
           
-          <div style="background: #fef3c7; padding: 20px; margin: 20px 0; border-radius: 8px;">
-            <h4 style="color: #92400e; margin: 0 0 10px 0;">Tips for Success:</h4>
-            <p style="color: #92400e; margin: 0; font-size: 14px;">
-              • Take high-quality photos of your products<br/>
-              • Write detailed, engaging product descriptions<br/>
-              • Price competitively while valuing your craftsmanship<br/>
-              • Respond promptly to customer inquiries<br/>
-              • Package your items with care and love
+          <div style="background: #f4f0e8; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #e8ddd0;">
+            <h4 style="color: #5c4435; margin: 0 0 15px 0;">💡 Tips for a Successful Journey:</h4>
+            <div style="color: #5c4435; font-size: 14px; line-height: 1.6;">
+              <p style="margin: 8px 0;">📷 <strong>Showcase your art:</strong> Take bright, clear photos that capture the beauty of your work</p>
+              <p style="margin: 8px 0;">✍️ <strong>Tell your story:</strong> Write compelling descriptions that connect with customers</p>
+              <p style="margin: 8px 0;">💎 <strong>Value your craft:</strong> Price fairly while honoring the time and skill in your work</p>
+              <p style="margin: 8px 0;">💬 <strong>Build relationships:</strong> Respond warmly and promptly to customer messages</p>
+              <p style="margin: 8px 0;">📦 <strong>Create experiences:</strong> Package with love - it's part of the gift!</p>
+            </div>
+          </div>
+          
+          <div style="background: #e8ddd0; padding: 20px; margin: 20px 0; border-radius: 8px; text-align: center;">
+            <h4 style="color: #5c4435; margin: 0 0 10px 0;">🤝 We're here to support you!</h4>
+            <p style="color: #5c4435; margin: 0; font-size: 14px;">
+              Have questions? Need help getting started? Our support team is ready to help you succeed. 
+              <br/>Contact us anytime at support@zaryah.com
             </p>
           </div>
           
-          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-            If you have any questions or need help getting started, please don't hesitate to contact our support team. We're here to help you succeed!
+          <p style="color: #6b7280; font-size: 14px; margin-top: 30px; text-align: center; font-style: italic;">
+            "Every great journey begins with a single step. Today, you take yours with Zaryah." ✨
           </p>
         </div>
       </div>
@@ -292,29 +301,32 @@ class EmailService {
     const text = `
 Congratulations, ${seller.name}!
 
-Your seller account has been approved on Zaryah!
+Your seller journey with Zaryah is set to go! 🎉
 
 ${quote}
 
-You can now start listing your beautiful handmade products and connect with customers who appreciate authentic craftsmanship.
+Welcome to the Zaryah family! Your seller account has been approved and you're now ready to share your beautiful handmade creations with customers who truly appreciate authentic craftsmanship.
 
-What you can do now:
-• Access your seller dashboard
-• Upload product photos and descriptions  
-• Set your pricing and inventory
-• Start receiving orders from customers
-• Track your sales and earnings
+Your seller journey starts now:
+• Access your personalized seller dashboard
+• Upload stunning photos of your creations
+• Set competitive pricing for your masterpieces
+• Start receiving orders from eager customers
+• Track your sales and growing success
+• Build your brand and customer following
 
 Go to your dashboard: ${dashboardUrl}
 
-Tips for Success:
-• Take high-quality photos of your products
-• Write detailed, engaging product descriptions
-• Price competitively while valuing your craftsmanship
-• Respond promptly to customer inquiries
-• Package your items with care and love
+Tips for a Successful Journey:
+• Showcase your art: Take bright, clear photos that capture the beauty of your work
+• Tell your story: Write compelling descriptions that connect with customers
+• Value your craft: Price fairly while honoring the time and skill in your work
+• Build relationships: Respond warmly and promptly to customer messages
+• Create experiences: Package with love - it's part of the gift!
 
-If you have any questions or need help getting started, please contact our support team.
+We're here to support you! Have questions? Contact us at support@zaryah.com
+
+"Every great journey begins with a single step. Today, you take yours with Zaryah."
     `;
     
     return this.sendEmail({
