@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { User } from '../types';
 import toast from 'react-hot-toast';
 
@@ -110,10 +111,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // For sellers, don't create fallback - they need proper approval
         if (supabaseUser.user_metadata?.role === 'seller') {
           console.error('Seller profile not found - this should not happen');
-          setUser(null);
+          // Don't set user to null immediately, try to create profile first
+          console.log('Attempting to create seller profile from metadata');
+        } else {
+          createFallbackUser(supabaseUser, supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User');
           return;
         }
-        createFallbackUser(supabaseUser, supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User');
         return;
       }
 
@@ -128,6 +131,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                              'User';
           const userRole = supabaseUser.user_metadata?.role || 'buyer';
           console.log('Creating new profile for user:', supabaseUser.id);
+          
+          // For sellers, ensure all required fields are present
+          if (userRole === 'seller') {
+            const requiredFields = ['business_name', 'mobile', 'verification_doc'];
+            const missingFields = requiredFields.filter(field => !supabaseUser.user_metadata?.[field]);
+            
+            if (missingFields.length > 0) {
+              console.error('Missing required seller fields:', missingFields);
+              setUser(null);
+              toast.error('Registration incomplete. Missing required seller information.');
+              return;
+            }
+          }
           
           try {
             const { data: newProfile, error: insertError } = await supabase
@@ -151,8 +167,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               console.error('Error creating profile:', insertError);
               // For sellers, don't create fallback
               if (userRole === 'seller') {
-                setUser(null);
-                toast.error('Failed to create seller profile. Please contact support.');
+                console.error('Seller profile creation failed:', insertError);
+                toast.error(`Failed to create seller profile: ${insertError.message}. Please contact support.`);
+                // Sign out the user since profile creation failed
+                await supabase.auth.signOut();
                 return;
               }
               createFallbackUser(supabaseUser, defaultName);
@@ -175,8 +193,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.warn('Failed to create profile in database, using fallback');
             // For sellers, don't create fallback
             if (userRole === 'seller') {
-              setUser(null);
+              console.error('Seller profile creation failed:', insertError);
               toast.error('Failed to create seller profile. Please contact support.');
+              // Sign out the user since profile creation failed
+              await supabase.auth.signOut();
               return;
             }
             createFallbackUser(supabaseUser, defaultName);
@@ -223,7 +243,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name: defaultName,
       role: 'buyer',
       city: 'Mumbai',
-      isVerified: false
+      isVerified: false,
+      approvalStatus: 'approved'
     });
   };
 
@@ -316,32 +337,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.user) {
         console.log('Registration successful for:', data.user.email);
         console.log('User registered, creating profile...');
-        // Create profile immediately
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            name,
-            role,
-            city,
-            business_name: businessName,
-            description,
-            is_verified: role === 'buyer' || role === 'admin',
-            approval_status: role === 'seller' ? 'pending' : 'approved',
-            mobile: role === 'seller' ? mobile : undefined,
-            verification_doc: role === 'seller' ? verificationDoc : undefined
-          });
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          console.warn('Profile creation failed, but user account was created successfully');
-          if (role === 'seller') {
-            toast.success('Seller account created! Please check your email for further instructions. Admin approval is required before you can access your dashboard.');
-          } else {
-            toast.success('Account created successfully! Profile will be set up automatically on first login.');
-          }
-          return true;
-        }
-        console.log('Profile created successfully');
+        
+        // Profile will be created automatically by the auth state change handler
+        // Just show success message based on role
         
         if (role === 'seller') {
           toast.success('Seller account created successfully! Please check your email for further instructions. You will receive a notification once your account is approved.');
